@@ -189,6 +189,25 @@ struct HostedToolActionTests {
     }
 
     @Test
+    func updatingFilterAppliesImmediatelyWithoutClosingTheSheet() {
+        let editorViewModel = EditorViewModel()
+        let videoPlayer = VideoPlayerManager()
+        editorViewModel.currentVideo = Video.mock
+        editorViewModel.presentationState.selectedTool = .filters
+
+        let draftState = HostedVideoEditorToolActionCoordinator.updateFilter(
+            .chrome,
+            currentDraftState: .init(),
+            editorViewModel: editorViewModel,
+            videoPlayer: videoPlayer
+        )
+
+        #expect(draftState.filterDraft == .chrome)
+        #expect(editorViewModel.currentVideo?.filter == .chrome)
+        #expect(editorViewModel.presentationState.selectedTool == .filters)
+    }
+
+    @Test
     func resettingAudioAfterApplyingAVolumeChangeClearsTheToolbarPresentationImmediately() {
         let editorViewModel = EditorViewModel(
             .init(

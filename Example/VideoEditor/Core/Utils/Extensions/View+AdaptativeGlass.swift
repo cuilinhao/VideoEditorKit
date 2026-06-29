@@ -59,57 +59,75 @@ private struct AdaptativeGlassModifier: ViewModifier {
 
     @ViewBuilder
     func body(content: Content) -> some View {
-        if #available(iOS 26, *) {
-            glassContent(content)
-        } else {
+        #if compiler(>=6.2)
+            if #available(iOS 26, *) {
+                glassContent(content)
+            } else {
+                fallbackContent(content)
+            }
+        #else
             fallbackContent(content)
-        }
+        #endif
     }
 
     // MARK: - Private Methods
 
-    @available(iOS 26, *)
-    @ViewBuilder
-    private func glassContent(_ content: Content) -> some View {
-        switch shape {
-        case .roundedRectangle(let cornerRadius):
-            if let tint {
-                content.glassEffect(
-                    resolvedGlassEffect(tint: tint),
-                    in: .rect(cornerRadius: cornerRadius)
-                )
-            } else {
-                content.glassEffect(
-                    resolvedGlassEffect(),
-                    in: .rect(cornerRadius: cornerRadius)
-                )
-            }
-        case .circle:
-            if let tint {
-                content.glassEffect(
-                    resolvedGlassEffect(tint: tint),
-                    in: .circle
-                )
-            } else {
-                content.glassEffect(
-                    resolvedGlassEffect(),
-                    in: .circle
-                )
-            }
-        case .capsule:
-            if let tint {
-                content.glassEffect(
-                    resolvedGlassEffect(tint: tint),
-                    in: .capsule
-                )
-            } else {
-                content.glassEffect(
-                    resolvedGlassEffect(),
-                    in: .capsule
-                )
+    #if compiler(>=6.2)
+        @available(iOS 26, *)
+        @ViewBuilder
+        private func glassContent(_ content: Content) -> some View {
+            switch shape {
+            case .roundedRectangle(let cornerRadius):
+                if let tint {
+                    content.glassEffect(
+                        resolvedGlassEffect(tint: tint),
+                        in: .rect(cornerRadius: cornerRadius)
+                    )
+                } else {
+                    content.glassEffect(
+                        resolvedGlassEffect(),
+                        in: .rect(cornerRadius: cornerRadius)
+                    )
+                }
+            case .circle:
+                if let tint {
+                    content.glassEffect(
+                        resolvedGlassEffect(tint: tint),
+                        in: .circle
+                    )
+                } else {
+                    content.glassEffect(
+                        resolvedGlassEffect(),
+                        in: .circle
+                    )
+                }
+            case .capsule:
+                if let tint {
+                    content.glassEffect(
+                        resolvedGlassEffect(tint: tint),
+                        in: .capsule
+                    )
+                } else {
+                    content.glassEffect(
+                        resolvedGlassEffect(),
+                        in: .capsule
+                    )
+                }
             }
         }
-    }
+
+        @available(iOS 26, *)
+        private func resolvedGlassEffect(tint: Color? = nil) -> Glass {
+            let tintOpacity = prominent ? 0.30 : 0.18
+
+            if let tint {
+                let glass = Glass.regular.tint(tint.opacity(tintOpacity))
+                return isInteractive ? glass.interactive() : glass
+            }
+
+            return isInteractive ? .regular.interactive() : .regular
+        }
+    #endif
 
     @ViewBuilder
     private func fallbackContent(_ content: Content) -> some View {
@@ -124,18 +142,6 @@ private struct AdaptativeGlassModifier: ViewModifier {
         case .capsule:
             content.background(.ultraThinMaterial, in: Capsule(style: .continuous))
         }
-    }
-
-    @available(iOS 26, *)
-    private func resolvedGlassEffect(tint: Color? = nil) -> Glass {
-        let tintOpacity = prominent ? 0.30 : 0.18
-
-        if let tint {
-            let glass = Glass.regular.tint(tint.opacity(tintOpacity))
-            return isInteractive ? glass.interactive() : glass
-        }
-
-        return isInteractive ? .regular.interactive() : .regular
     }
 
 }

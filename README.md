@@ -8,7 +8,7 @@ public configuration, persistence, transcription, canvas, and export APIs.
 
 ## Requirements
 
-- iOS 18.6+ app target
+- iOS 17.0+ app target
 - Swift 6
 - Xcode with Swift Package Manager
 - iPhone UI today; iPad support is not the current contract
@@ -18,7 +18,7 @@ public configuration, persistence, transcription, canvas, and export APIs.
 - Local video editing from a file URL or async import resolver
 - Trim, playback speed, crop presets, canvas zoom/pan, explicit rotation, mirror
 - One recorded audio track mixed with the source audio
-- Brightness, contrast, and saturation adjustments
+- Built-in video filters plus brightness, contrast, and saturation adjustments
 - Frame/background styling
 - Optional transcript generation and editable caption overlays
 - Manual save that creates an edited copy while preserving the original video

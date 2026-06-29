@@ -25,6 +25,8 @@ public struct VideoEditingConfiguration: Codable, Equatable, Sendable {
     public var canvas = Canvas()
     /// Color adjustment values used by preview and export.
     public var adjusts = Adjusts()
+    /// Selected built-in video filter used by preview and export.
+    public var filter: VideoFilter = .none
     /// Frame/background styling state.
     public var frame = Frame()
     /// Extra recorded-audio state.
@@ -50,6 +52,7 @@ public struct VideoEditingConfiguration: Codable, Equatable, Sendable {
         case crop
         case canvas
         case adjusts
+        case filter
         case frame
         case audio
         case transcript
@@ -65,6 +68,7 @@ public struct VideoEditingConfiguration: Codable, Equatable, Sendable {
         crop: Crop = .init(),
         canvas: Canvas = .init(),
         adjusts: Adjusts = .init(),
+        filter: VideoFilter = .none,
         frame: Frame = .init(),
         audio: Audio = .init(),
         transcript: Transcript = .init(),
@@ -76,6 +80,7 @@ public struct VideoEditingConfiguration: Codable, Equatable, Sendable {
         self.crop = crop
         self.canvas = canvas
         self.adjusts = adjusts
+        self.filter = filter
         self.frame = frame
         self.audio = audio
         self.transcript = transcript
@@ -110,6 +115,7 @@ public struct VideoEditingConfiguration: Codable, Equatable, Sendable {
         try container.encode(crop, forKey: .crop)
         try container.encode(canvas, forKey: .canvas)
         try container.encode(adjusts, forKey: .adjusts)
+        try container.encode(filter, forKey: .filter)
         try container.encode(frame, forKey: .frame)
         try container.encode(audio, forKey: .audio)
         try container.encode(transcript, forKey: .transcript)
@@ -131,6 +137,7 @@ public struct VideoEditingConfiguration: Codable, Equatable, Sendable {
             crop: try container.decodeIfPresent(Crop.self, forKey: .crop) ?? .init(),
             canvas: try container.decodeIfPresent(Canvas.self, forKey: .canvas) ?? .init(),
             adjusts: decodedAdjusts,
+            filter: try container.decodeIfPresent(VideoFilter.self, forKey: .filter) ?? .none,
             frame: try container.decodeIfPresent(Frame.self, forKey: .frame) ?? .init(),
             audio: try container.decodeIfPresent(Audio.self, forKey: .audio) ?? .init(),
             transcript: try container.decodeIfPresent(Transcript.self, forKey: .transcript) ?? .init(),
@@ -146,7 +153,7 @@ public struct VideoEditingConfiguration: Codable, Equatable, Sendable {
         }
 
         switch schemaVersion {
-        case .v1:
+        case .v1, .v2:
             return preservingVersion(Self.currentSchemaVersion.rawValue)
                 .clearingOpaquePayload()
         case .current:
@@ -174,7 +181,8 @@ extension VideoEditingConfiguration {
     /// Schema versions supported by persisted editing snapshots.
     public enum SchemaVersion: Int, Codable, Equatable, Sendable {
         case v1 = 1
-        case current = 2
+        case v2 = 2
+        case current = 3
     }
 
     /// Trim bounds stored in source timeline seconds.

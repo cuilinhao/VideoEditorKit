@@ -25,12 +25,14 @@ struct VideoEditorShellView: View {
                             secondaryAction()
                         }
 
-                        if #available(iOS 26.0, *) {
-                            ToolbarSpacer(
-                                .fixed,
-                                placement: VideoEditorToolbarActionLayout.separatorPlacement.toolbarItemPlacement
-                            )
-                        }
+                        #if compiler(>=6.2)
+                            if #available(iOS 26.0, *) {
+                                ToolbarSpacer(
+                                    .fixed,
+                                    placement: VideoEditorToolbarActionLayout.separatorPlacement.toolbarItemPlacement
+                                )
+                            }
+                        #endif
 
                         ToolbarItem(
                             placement: VideoEditorToolbarActionLayout.savePlacement.toolbarItemPlacement

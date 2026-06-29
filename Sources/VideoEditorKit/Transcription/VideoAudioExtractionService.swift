@@ -83,7 +83,7 @@ struct VideoAudioExtractionService {
         exportSession.shouldOptimizeForNetworkUse = false
 
         do {
-            try await exportSession.export(to: outputURL, as: .m4a)
+            try await exportSession.exportCompatible(to: outputURL, as: .m4a)
             return outputURL
         } catch is CancellationError {
             dependencies.removeFile(outputURL)

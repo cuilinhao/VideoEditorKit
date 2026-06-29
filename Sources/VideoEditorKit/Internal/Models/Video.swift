@@ -25,6 +25,7 @@ struct Video: Identifiable, @unchecked Sendable {
     var geometrySize: CGSize = .zero
     var isMirror: Bool = false
     var toolsApplied = [Int]()
+    var filter: VideoFilter = .none
     var colorAdjusts = ColorAdjusts()
     var videoFrames: VideoFrames? = nil
     var audio: Audio?

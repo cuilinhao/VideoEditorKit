@@ -72,11 +72,15 @@ struct AdaptativeGlassContainer<Content: View>: View {
 
     @ViewBuilder
     var body: some View {
-        if #available(iOS 26, *) {
-            glassContainerContent
-        } else {
+        #if compiler(>=6.2)
+            if #available(iOS 26, *) {
+                glassContainerContent
+            } else {
+                content()
+            }
+        #else
             content()
-        }
+        #endif
     }
 
     // MARK: - Initializer
@@ -91,12 +95,14 @@ struct AdaptativeGlassContainer<Content: View>: View {
 
     // MARK: - Private Properties
 
-    @available(iOS 26, *)
-    private var glassContainerContent: some View {
-        GlassEffectContainer(spacing: spacing) {
-            content()
+    #if compiler(>=6.2)
+        @available(iOS 26, *)
+        private var glassContainerContent: some View {
+            GlassEffectContainer(spacing: spacing) {
+                content()
+            }
         }
-    }
+    #endif
 
 }
 
@@ -128,57 +134,73 @@ private struct AdaptativeGlassModifier: ViewModifier {
 
     @ViewBuilder
     func body(content: Content) -> some View {
-        if #available(iOS 26, *) {
-            glassContent(content)
-        } else {
+        #if compiler(>=6.2)
+            if #available(iOS 26, *) {
+                glassContent(content)
+            } else {
+                fallbackContent(content)
+            }
+        #else
             fallbackContent(content)
-        }
+        #endif
     }
 
     // MARK: - Private Methods
 
-    @available(iOS 26, *)
-    @ViewBuilder
-    private func glassContent(_ content: Content) -> some View {
-        switch style.shape {
-        case .roundedRectangle(let cornerRadius):
-            if let tint {
-                content.glassEffect(
-                    resolvedGlassEffect(tint: tint),
-                    in: .rect(cornerRadius: cornerRadius)
-                )
-            } else {
-                content.glassEffect(
-                    resolvedGlassEffect(),
-                    in: .rect(cornerRadius: cornerRadius)
-                )
-            }
-        case .circle:
-            if let tint {
-                content.glassEffect(
-                    resolvedGlassEffect(tint: tint),
-                    in: .circle
-                )
-            } else {
-                content.glassEffect(
-                    resolvedGlassEffect(),
-                    in: .circle
-                )
-            }
-        case .capsule:
-            if let tint {
-                content.glassEffect(
-                    resolvedGlassEffect(tint: tint),
-                    in: .capsule
-                )
-            } else {
-                content.glassEffect(
-                    resolvedGlassEffect(),
-                    in: .capsule
-                )
+    #if compiler(>=6.2)
+        @available(iOS 26, *)
+        @ViewBuilder
+        private func glassContent(_ content: Content) -> some View {
+            switch style.shape {
+            case .roundedRectangle(let cornerRadius):
+                if let tint {
+                    content.glassEffect(
+                        resolvedGlassEffect(tint: tint),
+                        in: .rect(cornerRadius: cornerRadius)
+                    )
+                } else {
+                    content.glassEffect(
+                        resolvedGlassEffect(),
+                        in: .rect(cornerRadius: cornerRadius)
+                    )
+                }
+            case .circle:
+                if let tint {
+                    content.glassEffect(
+                        resolvedGlassEffect(tint: tint),
+                        in: .circle
+                    )
+                } else {
+                    content.glassEffect(
+                        resolvedGlassEffect(),
+                        in: .circle
+                    )
+                }
+            case .capsule:
+                if let tint {
+                    content.glassEffect(
+                        resolvedGlassEffect(tint: tint),
+                        in: .capsule
+                    )
+                } else {
+                    content.glassEffect(
+                        resolvedGlassEffect(),
+                        in: .capsule
+                    )
+                }
             }
         }
-    }
+
+        @available(iOS 26, *)
+        private func resolvedGlassEffect(tint: Color? = nil) -> Glass {
+            if let tint, let tintOpacity = style.tintOpacity {
+                let glass = Glass.regular.tint(tint.opacity(tintOpacity))
+                return style.isInteractive ? glass.interactive() : glass
+            }
+
+            return style.isInteractive ? .regular.interactive() : .regular
+        }
+    #endif
 
     @ViewBuilder
     private func fallbackContent(_ content: Content) -> some View {
@@ -193,16 +215,6 @@ private struct AdaptativeGlassModifier: ViewModifier {
         case .capsule:
             content.background(.ultraThinMaterial, in: Capsule(style: .continuous))
         }
-    }
-
-    @available(iOS 26, *)
-    private func resolvedGlassEffect(tint: Color? = nil) -> Glass {
-        if let tint, let tintOpacity = style.tintOpacity {
-            let glass = Glass.regular.tint(tint.opacity(tintOpacity))
-            return style.isInteractive ? glass.interactive() : glass
-        }
-
-        return style.isInteractive ? .regular.interactive() : .regular
     }
 
 }

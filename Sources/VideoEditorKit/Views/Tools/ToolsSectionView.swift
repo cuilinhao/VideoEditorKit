@@ -192,7 +192,7 @@ extension ToolsSectionView {
         switch tool {
         case .transcript:
             transcriptFooter
-        case .cut, .speed, .presets, .audio, .adjusts:
+        case .cut, .speed, .presets, .audio, .filters, .adjusts:
             EmptyView()
         }
     }

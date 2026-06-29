@@ -5,6 +5,7 @@ struct EditorToolDraftState: Equatable {
     // MARK: - Public Properties
 
     var speedDraft = 1.0
+    var filterDraft: VideoFilter = .none
     var adjustsDraft = ColorAdjusts()
     var presetDraft: VideoCropFormatPreset = .original
     var audioDraft = AudioToolDraft()
@@ -40,6 +41,8 @@ struct EditorToolDraftCoordinator {
                 video: video,
                 selectedTrack: selectedTrack
             )
+        case .filters:
+            updatedState.filterDraft = video.filter
         case .adjusts:
             updatedState.adjustsDraft = video.colorAdjusts
         case .transcript, .cut:
@@ -70,6 +73,8 @@ struct EditorToolDraftCoordinator {
                     video: video,
                     selectedTrack: selectedTrack
                 )
+        case .filters:
+            return video.filter != draftState.filterDraft
         case .adjusts:
             return video.colorAdjusts != draftState.adjustsDraft
         case .transcript:
@@ -86,7 +91,7 @@ struct EditorToolDraftCoordinator {
             .animated
         case .transcript:
             .transcript
-        case .speed, .audio, .adjusts, .cut:
+        case .speed, .audio, .filters, .adjusts, .cut:
             .standard
         }
     }

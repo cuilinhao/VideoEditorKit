@@ -410,6 +410,28 @@ struct ColorAdjustsHelperTests {
     }
 
     @Test
+    func createVideoAppearanceFiltersCombinesSelectedFilterAndAdjusts() {
+        let filters = Helpers.createVideoAppearanceFilters(
+            filter: .noir,
+            colorAdjusts: .init(brightness: 0.1)
+        )
+
+        #expect(filters.count == 2)
+        #expect(filters[0].name == "CIPhotoEffectNoir")
+        #expect(filters[1].name == "CIColorControls")
+    }
+
+    @Test
+    func createVideoAppearanceFiltersOmitsIdentityAppearance() {
+        let filters = Helpers.createVideoAppearanceFilters(
+            filter: .none,
+            colorAdjusts: .init()
+        )
+
+        #expect(filters.isEmpty)
+    }
+
+    @Test
     func colorAdjustTypesExposeExpectedCoreImageKeysAndIdentityBehavior() {
         #expect(ColorAdjustType.brightness.key == kCIInputBrightnessKey)
         #expect(ColorAdjustType.contrast.key == kCIInputContrastKey)

@@ -10,7 +10,7 @@ Read this before changing code. Keep it short, current, and practical.
 - Example app: `Example/VideoEditor`.
 - Example tests: `Example/VideoEditorTests`.
 - Workspace: `Example/VideoEditor.xcworkspace`.
-- Deployment target: iOS 18.6+.
+- Deployment target: iOS 17.0+.
 
 ## Core Docs
 

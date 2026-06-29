@@ -133,6 +133,13 @@ enum HostedVideoEditorToolActionCoordinator {
                 editorViewModel: editorViewModel,
                 videoPlayer: videoPlayer
             )
+        case .filters:
+            applyFiltersTool(
+                draftState,
+                video: video,
+                editorViewModel: editorViewModel,
+                videoPlayer: videoPlayer
+            )
         case .adjusts:
             applyAdjustsTool(
                 draftState,
@@ -235,7 +242,28 @@ enum HostedVideoEditorToolActionCoordinator {
         updatedDraftState.adjustsDraft = adjusts
 
         editorViewModel.setAdjusts(adjusts)
-        videoPlayer.setColorAdjusts(adjusts)
+        videoPlayer.setVideoAppearance(
+            filter: updatedDraftState.filterDraft,
+            colorAdjusts: adjusts
+        )
+
+        return updatedDraftState
+    }
+
+    static func updateFilter(
+        _ filter: VideoFilter,
+        currentDraftState: EditorToolDraftState,
+        editorViewModel: EditorViewModel,
+        videoPlayer: VideoPlayerManager
+    ) -> EditorToolDraftState {
+        var updatedDraftState = currentDraftState
+        updatedDraftState.filterDraft = filter
+
+        editorViewModel.setFilter(filter)
+        videoPlayer.setVideoAppearance(
+            filter: filter,
+            colorAdjusts: updatedDraftState.adjustsDraft
+        )
 
         return updatedDraftState
     }
@@ -325,6 +353,25 @@ enum HostedVideoEditorToolActionCoordinator {
         editorViewModel.closeSelectedTool()
     }
 
+    private static func applyFiltersTool(
+        _ draftState: EditorToolDraftState,
+        video: Video,
+        editorViewModel: EditorViewModel,
+        videoPlayer: VideoPlayerManager
+    ) {
+        guard draftState.filterDraft != video.filter else {
+            editorViewModel.closeSelectedTool()
+            return
+        }
+
+        editorViewModel.setFilter(draftState.filterDraft)
+        videoPlayer.setVideoAppearance(
+            filter: draftState.filterDraft,
+            colorAdjusts: draftState.adjustsDraft
+        )
+        editorViewModel.closeSelectedTool()
+    }
+
     private static func applyAdjustsTool(
         _ draftState: EditorToolDraftState,
         video: Video,
@@ -337,7 +384,10 @@ enum HostedVideoEditorToolActionCoordinator {
         }
 
         editorViewModel.setAdjusts(draftState.adjustsDraft)
-        videoPlayer.setColorAdjusts(draftState.adjustsDraft)
+        videoPlayer.setVideoAppearance(
+            filter: draftState.filterDraft,
+            colorAdjusts: draftState.adjustsDraft
+        )
         editorViewModel.closeSelectedTool()
     }
 

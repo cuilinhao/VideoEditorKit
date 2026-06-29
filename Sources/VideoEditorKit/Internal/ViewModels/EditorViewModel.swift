@@ -355,6 +355,21 @@ final class EditorViewModel {
         markEditingConfigurationChanged()
     }
 
+    func setFilter(_ filter: VideoFilter) {
+        guard var currentVideo else { return }
+        cancelPendingToolReset(for: .filters)
+
+        guard
+            EditorAppearanceEditingCoordinator.setFilter(
+                filter,
+                in: &currentVideo
+            )
+        else { return }
+
+        self.currentVideo = currentVideo
+        markEditingConfigurationChanged()
+    }
+
     func updateRate(rate: Float) {
         cancelPendingToolReset(for: .speed)
         guard var currentVideo else { return }
@@ -530,6 +545,8 @@ final class EditorViewModel {
             resetToolPresets()
         case .audio:
             resetToolAudio(videoPlayer: videoPlayer)
+        case .filters:
+            resetToolFilters(videoPlayer: videoPlayer)
         case .adjusts:
             resetToolAdjusts(videoPlayer: videoPlayer)
         case .transcript:
@@ -565,7 +582,10 @@ final class EditorViewModel {
         guard let video else { return }
         frames = EditorAppearanceEditingCoordinator.framesState(from: video)
         videoPlayer.syncPlaybackState(with: video)
-        videoPlayer.setColorAdjusts(video.colorAdjusts)
+        videoPlayer.setVideoAppearance(
+            filter: video.filter,
+            colorAdjusts: video.colorAdjusts
+        )
     }
 
     func resolvedPlayerDisplaySize(for video: Video, in containerSize: CGSize) -> CGSize {
@@ -1119,6 +1139,18 @@ final class EditorViewModel {
             currentVideo.removeTool(for: .audio)
         }
         videoPlayer.setVolume(true, value: 1.0)
+    }
+
+    private func resetToolFilters(videoPlayer: VideoPlayerManager) {
+        guard var currentVideo else { return }
+        guard
+            EditorAppearanceEditingCoordinator.restoreDefaultFilter(
+                in: &currentVideo
+            )
+        else { return }
+
+        self.currentVideo = currentVideo
+        videoPlayer.clearVideoFilter()
     }
 
     private func resetToolAdjusts(videoPlayer: VideoPlayerManager) {

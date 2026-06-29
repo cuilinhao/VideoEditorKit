@@ -246,7 +246,7 @@ enum TestFixtures {
 
         exportSession.shouldOptimizeForNetworkUse = false
 
-        try await exportSession.export(to: outputURL, as: .mp4)
+        try await exportSession.exportCompatible(to: outputURL, as: .mp4)
         return outputURL
     }
 

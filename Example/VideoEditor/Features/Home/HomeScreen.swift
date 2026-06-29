@@ -121,8 +121,7 @@ private struct ImportVideoCard: View {
                         .font(.subheadline)
                         .foregroundStyle(Theme.secondary)
                 }
-
-                Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 Image(systemName: "arrow.up.right")
                     .font(.headline.weight(.semibold))

@@ -47,7 +47,7 @@ struct RangedSliderView: View {
         GeometryReader { geometry in
             sliderView(sliderSize: geometry.size)
         }
-        .sensoryFeedback(trigger: sliderFeedbackTrigger) {
+        .sensoryFeedback(trigger: sliderFeedbackTrigger) { _, _ in
             resolvedSliderFeedback
         }
     }

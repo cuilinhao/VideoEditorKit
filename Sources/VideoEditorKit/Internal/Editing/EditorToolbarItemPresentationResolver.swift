@@ -103,6 +103,10 @@ struct EditorToolbarItemPresentationResolver {
                 draftPresentationState.draftState.audioDraft,
                 video: video
             )
+        case .filters:
+            return filtersDraftPresentation(
+                draftPresentationState.draftState.filterDraft
+            )
         case .adjusts:
             return adjustsDraftPresentation(
                 draftPresentationState.draftState.adjustsDraft
@@ -190,6 +194,19 @@ struct EditorToolbarItemPresentationResolver {
         )
     }
 
+    private static func filtersDraftPresentation(
+        _ filterDraft: VideoFilter
+    ) -> EditorToolbarItemPresentation {
+        let isApplied = filterDraft.isIdentity == false
+
+        return .init(
+            title: ToolEnum.filters.title,
+            image: ToolEnum.filters.image,
+            subtitle: isApplied ? filterDraft.title : nil,
+            isApplied: isApplied
+        )
+    }
+
     private static func transcriptDraftPresentation(
         _ draftDocument: TranscriptDocument?,
         transcriptDocument: TranscriptDocument?
@@ -217,6 +234,8 @@ struct EditorToolbarItemPresentationResolver {
             presetsSubtitle(cropPresentationSummary)
         case .audio:
             audioSubtitle(video)
+        case .filters:
+            filtersSubtitle(video)
         case .adjusts:
             adjustsSubtitle(video)
         case .transcript:
@@ -241,6 +260,8 @@ struct EditorToolbarItemPresentationResolver {
             committedPresetsAppliedState(cropPresentationSummary)
         case .audio:
             committedAudioAppliedState(video)
+        case .filters:
+            committedFiltersAppliedState(video)
         case .adjusts:
             committedAdjustsAppliedState(video)
         case .transcript:
@@ -347,6 +368,23 @@ struct EditorToolbarItemPresentationResolver {
 
         guard appliedAdjustmentsCount > 0 else { return nil }
         return VideoEditorStrings.toolbarAdjustmentsCount(appliedAdjustmentsCount)
+    }
+
+    private static func filtersSubtitle(
+        _ video: Video?
+    ) -> String? {
+        guard let filter = video?.filter, filter.isIdentity == false else {
+            return nil
+        }
+
+        return filter.title
+    }
+
+    private static func committedFiltersAppliedState(
+        _ video: Video?
+    ) -> Bool {
+        guard let filter = video?.filter else { return false }
+        return filter.isIdentity == false
     }
 
     private static func committedAdjustsAppliedState(

@@ -68,6 +68,15 @@ struct VideoEditorToolContentView: View {
                     )
                 }
             )
+        case .filters:
+            VideoFiltersToolView(selectedFilter: draftState.filterDraft) { filter in
+                draftState = HostedVideoEditorToolActionCoordinator.updateFilter(
+                    filter,
+                    currentDraftState: draftState,
+                    editorViewModel: editorViewModel,
+                    videoPlayer: videoPlayer
+                )
+            }
         case .adjusts:
             VideoAdjustsToolView(adjusts: draftState.adjustsDraft) { adjusts in
                 draftState = HostedVideoEditorToolActionCoordinator.updateAdjusts(

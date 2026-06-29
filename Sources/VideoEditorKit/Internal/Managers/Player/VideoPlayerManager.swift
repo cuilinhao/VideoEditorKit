@@ -5,7 +5,7 @@
 //  Created by Adriano Souza Costa on 23.03.2026.
 //
 
-import AVKit
+@preconcurrency import AVKit
 import Combine
 @preconcurrency import CoreImage
 import Foundation
@@ -17,11 +17,14 @@ struct VideoPlayerManagerDependencies: Sendable {
 
     // MARK: - Public Properties
 
-    let makeVideoComposition: @Sendable (AVAsset, ColorAdjusts) async throws -> AVVideoComposition
+    let makeVideoComposition: @Sendable (AVAsset, VideoFilter, ColorAdjusts) async throws -> AVVideoComposition
 
     static let live = Self(
-        makeVideoComposition: { asset, colorAdjusts in
-            try await asset.makeVideoComposition(applying: colorAdjusts)
+        makeVideoComposition: { asset, filter, colorAdjusts in
+            try await asset.makeVideoComposition(
+                applying: filter,
+                colorAdjusts: colorAdjusts
+            )
         }
     )
 
@@ -85,6 +88,9 @@ final class VideoPlayerManager {
 
     @ObservationIgnored
     private var pendingPlaybackTask: Task<Void, Never>?
+
+    @ObservationIgnored
+    private var previewFilter: VideoFilter = .none
 
     @ObservationIgnored
     private var previewColorAdjusts = ColorAdjusts()
@@ -588,15 +594,33 @@ extension VideoPlayerManager {
     // MARK: - Public Methods
 
     func setColorAdjusts(_ colorAdjusts: ColorAdjusts?) {
-        previewColorAdjusts = colorAdjusts ?? .init()
+        setVideoAppearance(
+            filter: previewFilter,
+            colorAdjusts: colorAdjusts ?? .init()
+        )
+    }
+
+    func setVideoAppearance(
+        filter: VideoFilter,
+        colorAdjusts: ColorAdjusts
+    ) {
+        previewFilter = filter
+        previewColorAdjusts = colorAdjusts
         applyCurrentColorAdjustsComposition()
     }
 
     func clearColorAdjusts() {
-        guard !previewColorAdjusts.isIdentity || adjustsCompositionTask != nil else { return }
+        setVideoAppearance(
+            filter: previewFilter,
+            colorAdjusts: .init()
+        )
+    }
 
-        previewColorAdjusts = .init()
-        applyCurrentColorAdjustsComposition()
+    func clearVideoFilter() {
+        setVideoAppearance(
+            filter: .none,
+            colorAdjusts: previewColorAdjusts
+        )
     }
 
     // MARK: - Private Methods
@@ -635,6 +659,7 @@ extension VideoPlayerManager {
             return
         }
 
+        let filter = previewFilter
         let colorAdjusts = previewColorAdjusts
 
         pause()
@@ -644,6 +669,7 @@ extension VideoPlayerManager {
                 let self,
                 let composition = try? await self.dependencies.makeVideoComposition(
                     currentItem.asset,
+                    filter,
                     colorAdjusts
                 )
             else {
@@ -672,9 +698,12 @@ extension VideoPlayerManager {
     }
 
     private func currentColorAdjustsSignature() -> String? {
-        guard !previewColorAdjusts.isIdentity else { return nil }
+        guard previewFilter.isIdentity == false || previewColorAdjusts.isIdentity == false else {
+            return nil
+        }
 
         return [
+            previewFilter.rawValue,
             String(previewColorAdjusts.brightness),
             String(previewColorAdjusts.contrast),
             String(previewColorAdjusts.saturation),
@@ -687,6 +716,18 @@ extension VideoPlayerManager {
 extension AVAsset {
 
     // MARK: - Public Methods
+
+    func makeVideoComposition(
+        applying filter: VideoFilter,
+        colorAdjusts: ColorAdjusts
+    ) async throws -> AVVideoComposition {
+        try await makeVideoComposition(
+            filterChain: Helpers.createVideoAppearanceFilters(
+                filter: filter,
+                colorAdjusts: colorAdjusts
+            )
+        )
+    }
 
     func makeVideoComposition(applying colorAdjusts: ColorAdjusts) async throws -> AVVideoComposition {
         try await makeVideoComposition(

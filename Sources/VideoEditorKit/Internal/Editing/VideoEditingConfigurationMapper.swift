@@ -47,6 +47,7 @@ enum VideoEditingConfigurationMapper {
                 contrast: video.colorAdjusts.contrast,
                 saturation: video.colorAdjusts.saturation
             ),
+            filter: video.filter,
             frame: .init(
                 scaleValue: video.videoFrames?.scaleValue ?? 0,
                 colorToken: video.videoFrames.map {
@@ -94,6 +95,7 @@ enum VideoEditingConfigurationMapper {
             contrast: configuration.adjusts.contrast,
             saturation: configuration.adjusts.saturation
         )
+        video.filter = configuration.filter
 
         if configuration.frame.scaleValue > 0 {
             video.videoFrames = VideoFrames(
@@ -160,6 +162,10 @@ enum VideoEditingConfigurationMapper {
 
         if !video.colorAdjusts.isIdentity {
             restoredTools.append(.adjusts)
+        }
+
+        if !video.filter.isIdentity {
+            restoredTools.append(.filters)
         }
 
         if configuration.transcript.featureState == .loaded, configuration.transcript.document != nil {

@@ -57,6 +57,32 @@ struct EditorAppearanceEditingCoordinator {
         return configurationVideo
     }
 
+    static func setFilter(
+        _ filter: VideoFilter,
+        in video: inout Video
+    ) -> Bool {
+        guard video.filter != filter else { return false }
+
+        video.filter = filter
+
+        if filter.isIdentity {
+            video.removeTool(for: .filters)
+        } else {
+            video.appliedTool(for: .filters)
+        }
+
+        return true
+    }
+
+    static func restoreDefaultFilter(
+        in video: inout Video
+    ) -> Bool {
+        guard video.filter != .none else { return false }
+        video.filter = .none
+        video.removeTool(for: .filters)
+        return true
+    }
+
     static func setAdjusts(
         _ adjusts: ColorAdjusts,
         in video: inout Video

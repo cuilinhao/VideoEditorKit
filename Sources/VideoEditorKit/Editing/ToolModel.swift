@@ -10,6 +10,7 @@ public enum ToolEnum: Int, CaseIterable, Identifiable, Codable, Sendable {
     case presets = 2
     case audio = 3
     case transcript = 4
+    case filters = 5
     case adjusts = 6
 
     /// Stable identifier for SwiftUI lists and selection.
@@ -28,10 +29,11 @@ public enum ToolEnum: Int, CaseIterable, Identifiable, Codable, Sendable {
         switch self {
         case .transcript: 0
         case .presets: 1
-        case .audio: 2
-        case .adjusts: 3
-        case .speed: 4
-        case .cut: 5
+        case .filters: 2
+        case .audio: 3
+        case .adjusts: 4
+        case .speed: 5
+        case .cut: 6
         }
     }
 
@@ -43,6 +45,7 @@ public enum ToolEnum: Int, CaseIterable, Identifiable, Codable, Sendable {
         case .presets: VideoEditorStrings.toolPresets
         case .audio: VideoEditorStrings.toolAudio
         case .transcript: VideoEditorStrings.toolTranscript
+        case .filters: VideoEditorStrings.toolFilters
         case .adjusts: VideoEditorStrings.toolAdjusts
         }
     }
@@ -55,6 +58,7 @@ public enum ToolEnum: Int, CaseIterable, Identifiable, Codable, Sendable {
         case .presets: "aspectratio"
         case .audio: "waveform"
         case .transcript: "captions.bubble"
+        case .filters: "camera.filters"
         case .adjusts: "circle.righthalf.filled"
         }
     }

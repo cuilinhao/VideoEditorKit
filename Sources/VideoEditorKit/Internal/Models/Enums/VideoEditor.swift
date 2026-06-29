@@ -5,7 +5,7 @@
 //  Created by Adriano Souza Costa on 23.03.2026.
 //
 
-import AVFoundation
+@preconcurrency import AVFoundation
 import CoreImage
 import Foundation
 import SwiftUI
@@ -48,11 +48,12 @@ enum VideoEditor {
             editingConfiguration: editingConfiguration,
             renderIntent: resolvedRenderIntent
         )
-        let adjusts = Helpers.createColorAdjustsFilters(
+        let appearanceFilters = Helpers.createVideoAppearanceFilters(
+            filter: video.filter,
             colorAdjusts: video.colorAdjusts
         )
 
-        let usesAdjustsStage = !adjusts.isEmpty
+        let usesAdjustsStage = !appearanceFilters.isEmpty
         let usesTranscriptStage = requiresTranscriptStage(editingConfiguration)
         let usesCanvasStage = requiresCanvasStage(editingConfiguration)
         let usesWatermarkStage = watermark != nil
@@ -81,7 +82,7 @@ enum VideoEditor {
                 video: video,
                 editingConfiguration: editingConfiguration,
                 exportProfile: exportProfile,
-                integratedAdjusts: integratesAdjustsIntoBaseStage ? adjusts : [],
+                integratedAdjusts: integratesAdjustsIntoBaseStage ? appearanceFilters : [],
                 progressRange: progressRange(
                     for: .base,
                     activeStages: renderStages
@@ -94,7 +95,7 @@ enum VideoEditor {
             )
 
             let adjustedURL = try await applyAdjustsOperation(
-                integratesAdjustsIntoBaseStage ? [] : adjusts,
+                integratesAdjustsIntoBaseStage ? [] : appearanceFilters,
                 fromUrl: url,
                 exportProfile: exportProfile,
                 progressRange: progressRange(
@@ -563,7 +564,7 @@ extension VideoEditor {
 
     }
 
-    private struct TranscriptAnimationContext {
+    private struct TranscriptAnimationContext: @unchecked Sendable {
 
         // MARK: - Public Properties
 
@@ -1994,7 +1995,7 @@ extension VideoEditor {
         }
 
         try await withTaskCancellationHandler {
-            try await session.export(to: outputURL, as: fileType)
+            try await session.exportCompatible(to: outputURL, as: fileType)
         } onCancel: {
             sessionBox.session.cancelExport()
         }

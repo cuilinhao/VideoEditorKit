@@ -34,6 +34,30 @@ struct EditorAppearanceEditingCoordinatorTests {
 
     @Test
     @MainActor
+    func setFilterAppliesAndRemovesTheFiltersTool() {
+        var video = Video.mock
+
+        let didApply = EditorAppearanceEditingCoordinator.setFilter(
+            .noir,
+            in: &video
+        )
+
+        #expect(didApply == true)
+        #expect(video.filter == .noir)
+        #expect(video.isAppliedTool(for: .filters) == true)
+
+        let didReset = EditorAppearanceEditingCoordinator.setFilter(
+            .none,
+            in: &video
+        )
+
+        #expect(didReset == true)
+        #expect(video.filter == .none)
+        #expect(video.isAppliedTool(for: .filters) == false)
+    }
+
+    @Test
+    @MainActor
     func restoreDefaultAdjustsKeepsTheToolAppliedUntilDeferredCleanup() {
         var video = Video.mock
         video.colorAdjusts = .init(brightness: 0.2)

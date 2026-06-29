@@ -199,6 +199,7 @@ enum VideoEditorStrings {
     static var toolPresets: String { localized("editor.tool.presets.title", defaultValue: "Presets") }
     static var toolAudio: String { localized("editor.tool.audio.title", defaultValue: "Audio") }
     static var toolTranscript: String { localized("editor.tool.transcript.title", defaultValue: "Transcript") }
+    static var toolFilters: String { localized("editor.tool.filters.title", defaultValue: "Filters") }
     static var toolAdjusts: String { localized("editor.tool.adjusts.title", defaultValue: "Adjusts") }
 
     static var toolLockedHint: String {
@@ -477,6 +478,17 @@ enum VideoEditorStrings {
     static var brightness: String { localized("editor.adjusts.brightness", defaultValue: "Brightness") }
     static var contrast: String { localized("editor.adjusts.contrast", defaultValue: "Contrast") }
     static var saturation: String { localized("editor.adjusts.saturation", defaultValue: "Saturation") }
+
+    // MARK: - Filters
+
+    static var filterNone: String { localized("editor.filters.none", defaultValue: "None") }
+    static var filterVivid: String { localized("editor.filters.vivid", defaultValue: "Vivid") }
+    static var filterWarm: String { localized("editor.filters.warm", defaultValue: "Warm") }
+    static var filterCool: String { localized("editor.filters.cool", defaultValue: "Cool") }
+    static var filterChrome: String { localized("editor.filters.chrome", defaultValue: "Chrome") }
+    static var filterFade: String { localized("editor.filters.fade", defaultValue: "Fade") }
+    static var filterMono: String { localized("editor.filters.mono", defaultValue: "Mono") }
+    static var filterNoir: String { localized("editor.filters.noir", defaultValue: "Noir") }
 
     // MARK: - Accessibility
 
