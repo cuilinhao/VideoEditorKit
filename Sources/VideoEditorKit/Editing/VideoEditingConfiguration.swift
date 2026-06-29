@@ -26,6 +26,10 @@ public struct VideoEditingConfiguration: Codable, Equatable, Sendable {
     /// Color adjustment values used by preview and export.
     public var adjusts = Adjusts()
     /// Selected built-in video filter used by preview and export.
+    ///
+    /// This was added after the original configuration schema. Decoding therefore
+    /// treats a missing value as `.none` so projects saved by older versions open
+    /// with their original visual appearance.
     public var filter: VideoFilter = .none
     /// Frame/background styling state.
     public var frame = Frame()
@@ -137,6 +141,9 @@ public struct VideoEditingConfiguration: Codable, Equatable, Sendable {
             crop: try container.decodeIfPresent(Crop.self, forKey: .crop) ?? .init(),
             canvas: try container.decodeIfPresent(Canvas.self, forKey: .canvas) ?? .init(),
             adjusts: decodedAdjusts,
+            // Older configuration payloads do not contain `filter`. Defaulting to
+            // `.none` preserves the previous behavior instead of forcing a migration
+            // failure for existing saved projects.
             filter: try container.decodeIfPresent(VideoFilter.self, forKey: .filter) ?? .none,
             frame: try container.decodeIfPresent(Frame.self, forKey: .frame) ?? .init(),
             audio: try container.decodeIfPresent(Audio.self, forKey: .audio) ?? .init(),
@@ -154,6 +161,9 @@ public struct VideoEditingConfiguration: Codable, Equatable, Sendable {
 
         switch schemaVersion {
         case .v1, .v2:
+            // v3 added `filter`. The decoded value already defaults to `.none` for
+            // v1/v2 payloads, so migration only needs to bump the stored version and
+            // drop the opaque copy of the old payload.
             return preservingVersion(Self.currentSchemaVersion.rawValue)
                 .clearingOpaquePayload()
         case .current:

@@ -593,6 +593,11 @@ extension VideoPlayerManager {
 
     // MARK: - Public Methods
 
+    /// Updates manual adjustments while preserving the currently selected preview filter.
+    ///
+    /// Filters and adjustments share a single `AVVideoComposition`. Rebuilding that
+    /// composition from both values prevents one tool from accidentally clearing the
+    /// other tool's draft preview.
     func setColorAdjusts(_ colorAdjusts: ColorAdjusts?) {
         setVideoAppearance(
             filter: previewFilter,
@@ -600,6 +605,11 @@ extension VideoPlayerManager {
         )
     }
 
+    /// Updates the live preview appearance for the current player item.
+    ///
+    /// This is the central preview entry point for both the Filters and Adjusts
+    /// tools. Keeping the two values together guarantees the preview, toolbar
+    /// state, and export filter chain all describe the same visual result.
     func setVideoAppearance(
         filter: VideoFilter,
         colorAdjusts: ColorAdjusts
@@ -609,6 +619,7 @@ extension VideoPlayerManager {
         applyCurrentColorAdjustsComposition()
     }
 
+    /// Clears manual adjustments without changing the selected preview filter.
     func clearColorAdjusts() {
         setVideoAppearance(
             filter: previewFilter,
@@ -616,6 +627,7 @@ extension VideoPlayerManager {
         )
     }
 
+    /// Clears the selected preview filter without changing manual adjustments.
     func clearVideoFilter() {
         setVideoAppearance(
             filter: .none,
@@ -626,6 +638,9 @@ extension VideoPlayerManager {
     // MARK: - Private Methods
 
     private func applyCurrentColorAdjustsComposition() {
+        // Generating an `AVVideoComposition` touches AVFoundation/Core Image and can
+        // be slow for large assets. Each request gets a generation number so stale
+        // async work cannot overwrite a newer filter or adjustment preview.
         adjustsCompositionTask?.cancel()
         adjustsCompositionGeneration += 1
 
@@ -641,6 +656,9 @@ extension VideoPlayerManager {
         let signature = currentColorAdjustsSignature()
 
         if signature == nil {
+            // With no active filter and identity adjustments, the cheapest and most
+            // accurate preview is the source asset itself. Removing the composition
+            // also avoids color differences caused by a no-op Core Image pipeline.
             guard appliedAdjustsSignature != nil || appliedAdjustsItemID != currentItemID else {
                 return
             }
@@ -665,6 +683,9 @@ extension VideoPlayerManager {
         pause()
 
         adjustsCompositionTask = Task { [weak self] in
+            // Capture the current filter values before leaving the main actor. If the
+            // user moves a slider or selects another filter, the generation check below
+            // discards this completed composition instead of flashing stale pixels.
             guard
                 let self,
                 let composition = try? await self.dependencies.makeVideoComposition(
@@ -702,6 +723,9 @@ extension VideoPlayerManager {
             return nil
         }
 
+        // The signature is a lightweight cache key for the currently applied preview.
+        // Raw values are sufficient here because the editor writes all appearance
+        // state through `setVideoAppearance(filter:colorAdjusts:)`.
         return [
             previewFilter.rawValue,
             String(previewColorAdjusts.brightness),
@@ -721,6 +745,8 @@ extension AVAsset {
         applying filter: VideoFilter,
         colorAdjusts: ColorAdjusts
     ) async throws -> AVVideoComposition {
+        // Preview and export both call through this helper, so the filter ordering
+        // and identity handling stay consistent across playback and rendered files.
         try await makeVideoComposition(
             filterChain: Helpers.createVideoAppearanceFilters(
                 filter: filter,

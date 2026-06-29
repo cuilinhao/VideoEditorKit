@@ -53,6 +53,9 @@ enum VideoEditor {
             colorAdjusts: video.colorAdjusts
         )
 
+        // Filters and manual adjustments are both Core Image appearance work. Treat
+        // them as a single stage so preview and export preserve the same ordering:
+        // selected filter first, adjustment sliders second.
         let usesAdjustsStage = !appearanceFilters.isEmpty
         let usesTranscriptStage = requiresTranscriptStage(editingConfiguration)
         let usesCanvasStage = requiresCanvasStage(editingConfiguration)
@@ -60,6 +63,9 @@ enum VideoEditor {
         let integratesAdjustsIntoBaseStage: Bool
 
         if usesAdjustsStage {
+            // Some exports can fold appearance filters into the base resize/layer
+            // pass. When that is possible we avoid writing an extra intermediate
+            // file, which keeps export faster and reduces generation loss.
             integratesAdjustsIntoBaseStage = await canIntegrateAdjustsIntoBaseRender(
                 video: video,
                 editingConfiguration: editingConfiguration,

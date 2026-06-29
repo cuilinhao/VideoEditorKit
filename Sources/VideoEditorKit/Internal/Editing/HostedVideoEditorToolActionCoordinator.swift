@@ -241,6 +241,9 @@ enum HostedVideoEditorToolActionCoordinator {
         var updatedDraftState = currentDraftState
         updatedDraftState.adjustsDraft = adjusts
 
+        // The Adjusts and Filters tools edit the same visual pipeline. Updating the
+        // preview with both draft values avoids losing the selected filter while the
+        // user is still tuning sliders.
         editorViewModel.setAdjusts(adjusts)
         videoPlayer.setVideoAppearance(
             filter: updatedDraftState.filterDraft,
@@ -259,6 +262,8 @@ enum HostedVideoEditorToolActionCoordinator {
         var updatedDraftState = currentDraftState
         updatedDraftState.filterDraft = filter
 
+        // Keep the draft filter visible immediately, but preserve any uncommitted
+        // adjustment slider values so switching filters is a non-destructive preview.
         editorViewModel.setFilter(filter)
         videoPlayer.setVideoAppearance(
             filter: filter,

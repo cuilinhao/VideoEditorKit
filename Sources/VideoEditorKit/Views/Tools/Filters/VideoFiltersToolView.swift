@@ -12,6 +12,10 @@ struct VideoFiltersToolView: View {
     // MARK: - Public Properties
 
     let selectedFilter: VideoFilter
+    /// Called whenever the user selects a filter swatch.
+    ///
+    /// The parent tool owns the draft state and immediately pushes the new value to
+    /// `VideoPlayerManager`, so this view stays as a stateless picker.
     private let onSelectFilter: (VideoFilter) -> Void
 
     // MARK: - Body
@@ -48,6 +52,8 @@ struct VideoFiltersToolView: View {
             onSelectFilter(filter)
         } label: {
             VStack(spacing: 10) {
+                // The swatch is an affordance only. Actual pixel processing happens
+                // in the shared Core Image pipeline so preview and export remain identical.
                 filterSwatch(filter)
                     .overlay(alignment: .topTrailing) {
                         if isSelected {
@@ -91,6 +97,7 @@ struct VideoFiltersToolView: View {
     private func filterSwatchFill(_ filter: VideoFilter) -> LinearGradient {
         switch filter {
         case .none:
+            // Neutral gray communicates that no Core Image filter will be applied.
             LinearGradient(
                 colors: [.gray.opacity(0.45), .gray.opacity(0.18)],
                 startPoint: .topLeading,
